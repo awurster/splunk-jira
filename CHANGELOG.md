@@ -7,7 +7,7 @@ author: Andrew Wurster
 * Add support to create Jira issues based on Splunk alerts / saved searches.
 * Limited support for adding attributes (i.e. Summary, Desc, etc)
 * Setup Instructions
-    * Install using pip, where `--prefix=<SPLUNK_HOME>` so that Jira Python lib packages are available to Splunk
+    * Install jira-python using pip, where `--prefix=<SPLUNK_HOME>` so that Jira Python lib packages are available to Splunk (_eventually this should get moved / redistributed back into jiracommon_)
         pip install --install-option="--prefix=/opt/splunk" jira-python
     * link from Splunk scripts back to app
         cd /opt/splunk/bin/scritps
