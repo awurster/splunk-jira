@@ -26,10 +26,38 @@ import gzip
 import csv
 import StringIO
 import ConfigParser
-from jira.client import JIRA
+from jira.client import JIRA  # eventually pull this one out
 import os
 import logging
 import time
+
+import jiracommon
+
+# row={}
+# results=[]
+# keywords, options = splunk.Intersplunk.getKeywordsAndOptions()
+# 
+# # Get configuration values from config.ini
+# local_conf = jiracommon.getLocalConf()
+# 
+# # Set up authentication variables
+# username = local_conf.get('jira', 'username')
+# password = local_conf.get('jira', 'password')
+# auth = username + ':' + password
+# authencode = base64.b64encode(auth)
+# 
+# # Set up URL prefix
+# hostname = local_conf.get('jira', 'hostname')
+# protocol = local_conf.get('jira', 'jira_protocol')
+# port = local_conf.get('jira', 'jira_port')
+# jiraserver = protocol + '://' + hostname + ':' + port
+# 
+# pattern = '%Y-%m-%dT%H:%M:%S'
+# datepattern = "(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})"
+# datevalues = re.compile(datepattern)
+# option = sys.argv[1]
+
+
 
 SPLUNK_HOME    = '/opt/splunk'
 APPNAME        = 'jira'
@@ -68,14 +96,13 @@ event_data = ''
 
 # set up jira object
 
-#class Alert():
-#    def __init__(self,):
+class Alert():
+    def __init__(self,):
+    def get_config():
+        pass
 
-def get_config():
-    pass
-
-def get_jira():
-    pass
+    def get_jira():
+        pass
 
 jira = JIRA(options = {'server': JIRA_URL}, basic_auth=(JIRA_USER, JIRA_PASS))
 
