@@ -3,8 +3,8 @@
 """
 description     : Handles alerts created from within Splunk UI and calls relevant script to generate specific types of Jira alerts.
 author          : Andrew Wurster
-date            : 20150120
-version         : 0.3
+date            : 20150128
+version         : 0.4
 
 Splunk script arg listing:
 
@@ -30,7 +30,7 @@ from jira.client import JIRA  # eventually pull this one out
 import os
 import logging
 import time
-
+import re
 import jiracommon
 
 # row={}
@@ -65,7 +65,7 @@ APP_DIR        = os.path.join(SPLUNK_HOME, 'etc', 'apps', APPNAME)
 RUN_DIR        = os.path.join(APP_DIR, 'bin')
 LOG_DIR        = os.path.join(APP_DIR, 'data')
 LOG_FILE       = os.path.join(LOG_DIR, 'alert_args.log')
-CONFIG_FILE    = os.path.join(APP_DIR, 'local', 'alerts_config.ini')
+CONFIG_FILE    = os.path.join(APP_DIR, 'local', 'config.ini')
 ALERT_CLASS    = 'secint_investigation'
 
 # Read config file
@@ -74,11 +74,21 @@ Config.read(CONFIG_FILE)
 
 DEBUG          = Config.getboolean('general','debug')
 
-JIRA_URL       = Config.get('jira_config', 'url')
-JIRA_USER      = Config.get('jira_config', 'username')
-JIRA_PASS      = Config.get('jira_config', 'password')
-JIRA_DEF_PROJECT = Config.get('jira_config', 'project')
-JIRA_DEF_TYPE    = Config.get('jira_config', 'issue_type')
+JIRA_PROTOCOL  = Config.get('jira', 'protocol')
+JIRA_HOST      = Config.get('jira', 'hostname')
+JIRA_PATH      = Config.get('jira', 'path')
+JIRA_PORT      = Config.get('jira', 'port')
+JIRA_URL       = JIRA_PROTOCOL + "://" + JIRA_HOST + ":" + JIRA_PORT + JIRA_PATH
+
+JIRA_USER      = Config.get('jira', 'username')
+JIRA_PASS      = Config.get('jira', 'password')
+
+JIRA_DEF_PROJECT = Config.get('jira', 'project')
+
+DEF_TYPE    = Config.get('alert', 'issue_type')
+DEF_LABELS  = Config.get('alert', 'labels')
+DEF_REGEX   = Config.get('alert', 'regex')
+DEF_CFIELDS = Config.get('alert', 'custom_fields')
 
 logging.basicConfig(format='%(levelname)s: %(message)s ', filename=LOG_FILE, filemode='a+', level=logging.WARN)
 
@@ -92,15 +102,21 @@ if DEBUG:
     logger.debug('Splunk script args list: %s', str(sys.argv))
 
 
+# Initialise vars
 event_data = ''
+issue_fields = {}
+
+
 
 # set up jira object
 
 class Alert():
-    def __init__(self,):
-    def get_config():
+    def __init__(self,**kwargs):
         pass
 
+    def get_config():
+        pass
+    
     def get_jira():
         pass
 
@@ -117,34 +133,70 @@ try:
     
     with gzip.open(search_dump, 'rb') as raw_file:
         raw_event_data = raw_file.read()
+        print "\n\n%s\n\n" % raw_event_data
         logger.debug('Opened raw search data from: %s', search_dump )
     csv_file = StringIO.StringIO(raw_event_data)
     csv_reader = csv.DictReader(csv_file, delimiter=',', quotechar='"')
     
-    event_data = '{noformat}'
+    #print dir(csv_reader)
+    event_data += '\t'.join([k for k in csv_reader.fieldnames]) +"\n"
     
     for row in csv_reader:
-        parsed_event_data = json.loads(row['_raw'])
-        event_data += json.dumps(parsed_event_data, indent=4, sort_keys=True) + "\n"
-    
-    event_data += '{noformat}'
+        print row.items()
+        event_data += '\t'.join([v for v in row.values()]) + "\n"
+        #event_data += json.dumps(parsed_event_data, indent=4, sort_keys=True) + "\n"
+    logger.debug('event_data=%s' % event_data)
+
 except:
-    e = sys.exc_info()[0]
-    logger.debug('Unknown exception raised: "%s"', e)
+    import traceback
+    logger.debug('Exception raised: "%s"', sys.exc_info()[0] )
+    logger.debug('Exception value: "%s"', traceback.print_tb( sys.exc_info()[2] ) )
+    #logger.debug(sys.exc_info())
+
+def parse_summary(search_summary):
+    matches = re.match(DEF_REGEX,search_summary).groupdict()
+    summary = {}
+    for k,v in matches.items():
+        summary[k] = v
+    
+    summary['labels'] = summary['labels'].split('-')
+    summary['summary'] = summary['summary'].strip()
+    return summary
+
+def parse_trigger(event_data):
+    pass
+
+# def parse_results(event_data):
+#    results = 
+#    pass
+
+parsed_summary = parse_summary(search_summary)
+
+desc =  ('h3. Splunk Link:\n' +
+        '\t[' +  parsed_summary['summary'] + '|' + search_url + ']\n')
+desc += ('h3. Search Query:\n' +
+        '{noformat}\n' +
+        search_trigger +
+        '{noformat}\n')
+desc += ('h3. Event Data:\n' +
+        '{noformat}\n' +
+        event_data +
+        '{noformat}\n')
+desc += ('h3. Alert Confidence\n' +
+        '\t' + parsed_summary['customfield_20481'] +'\n')
+
+issue_fields['project'] = {'key': JIRA_DEF_PROJECT}
+issue_fields['issuetype'] = {'name': DEF_TYPE }
+issue_fields['description'] = desc
+issue_fields['summary'] = parsed_summary['summary']
+issue_fields['labels'] = DEF_LABELS.split(',')
+issue_fields['labels'].extend( parsed_summary['labels'] )
 
 
-desc = "Splunk link: \n" + search_url + "\n"
-desc += "Splunk trigger: \n {noformat}" + search_trigger + "{noformat}\n"
-desc += "Event data: \n" + event_data 
+new_issue = jira.create_issue(fields=issue_fields)
 
-new_issue = jira.create_issue(
-  project={'key': JIRA_DEF_PROJECT },
-  issuetype={'name': JIRA_DEF_TYPE },
-  summary=search_summary,
-  description=desc
-)
-
-logger.debug('Opened new Jira issue: id=%s, summary="%s"', new_issue.id, new_issue.fields.summary)
+#logger.debug('Sending data: key=%s, name="%s"', JIRA_DEF_PROJECT, DEF_TYPE)
+#logger.debug('Opened new Jira issue: id=%s, summary="%s"', new_issue.id, new_issue.fields.summary)
 
 #if __name__ == "__main__":
 #    
