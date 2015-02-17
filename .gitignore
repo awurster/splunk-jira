@@ -1,4 +1,5 @@
 bin/config.ini
+data/*.log
 local/*
 metadata/local.meta
 *.pyc

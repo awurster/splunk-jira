@@ -192,11 +192,12 @@ issue_fields['summary'] = parsed_summary['summary']
 issue_fields['labels'] = DEF_LABELS.split(',')
 issue_fields['labels'].extend( parsed_summary['labels'] )
 
+issue_fields['labels'] = [l.lower() for l in issue_fields['labels']]
 
 new_issue = jira.create_issue(fields=issue_fields)
 
-#logger.debug('Sending data: key=%s, name="%s"', JIRA_DEF_PROJECT, DEF_TYPE)
-#logger.debug('Opened new Jira issue: id=%s, summary="%s"', new_issue.id, new_issue.fields.summary)
+logger.debug('Sending data: key=%s, name="%s"', JIRA_DEF_PROJECT, DEF_TYPE)
+logger.debug('Opened new Jira issue: id=%s, summary="%s"', new_issue.id, new_issue.fields.summary)
 
 #if __name__ == "__main__":
 #    
