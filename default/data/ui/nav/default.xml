@@ -1,4 +1,4 @@
-<nav search_view="search" color="#205081">
+<nav search_view="search" color="#c5c5c5">
   <view name="jira_overview" default='true' />
   <view name="issues" />   
   <collection label="Settings">
