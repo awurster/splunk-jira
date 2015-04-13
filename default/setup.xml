@@ -1,23 +1,6 @@
 <setup>
-  <!-- iterative update in this block -->
-  <!--<block title="Configured JIRA Integrations" endpoint="admin/jira_integration_list/" entity="*" mode="iter">
-        <text>
-        </text>
-        <text>* To remove an existing integration, select the account and click save. Refresh the page to reflect the changes. </text>
-        <input field="delete">
-          <label>$name$ (Key ID: $key_id$)</label>
-          <type>bool</type>
-        </input>
-  </block>-->
-
-  <block title="Add or Update JIRA Integrations" endpoint="admin/jira" entity="jira">
-    <text>Info on how to add JIRA integrations here.
-    </text>
-        <input field="jira_hostname">
-            <label>JIRA host to connect to</label>
-            <type>text</type>
-            <!-- <validation>.+</validation> -->
-       </input>
+    <block title="Add new credentials" endpoint="storage/passwords" entity="_new">
+      <input field="name">
         <input field="jira_username">
             <label>Enter your JIRA account user ID</label>
             <type>text</type>
@@ -28,9 +11,18 @@
             <type>password</type>
             <!-- <validation>.+</validation> -->
         </input>
+    </block>
+
+  <block title="Add or Update JIRA Integrations" endpoint="admin/jira" entity="jira">
+    <text>Info on how to add JIRA integrations here.
+    </text>
+        <input field="jira_hostname">
+            <label>JIRA host to connect to</label>
+            <type>text</type>
+            <!-- <validation>.+</validation> -->
+       </input>
+
   </block>
-
-
     <block title="Alert Classes" endpoint="admin/jira" entity="alert" >
        <text>Configure alert classes.</text>
         <input field="alert_name">

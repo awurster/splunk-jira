@@ -3,7 +3,7 @@ import splunk.admin as admin
 import splunk.entity as entity
     
 
-class JiraHandlerApp(admin.MConfigHandler):
+class ConfigApp(admin.MConfigHandler):
     '''
     Set up supported arguments
     '''
@@ -16,9 +16,9 @@ class JiraHandlerApp(admin.MConfigHandler):
         pass
 
     def handleList(self, confInfo):
-        confDict = self.readConf("jira")
+        confDict = self.readConf("server")
         if None != confDict:
-            for stanza, jira in confDict.items():
+            for stanza, settings in confDict.items():
                 for key, val in settings.items():
                     #if key in ['save_results']:
                     #    if int(val) == 1:
@@ -57,7 +57,7 @@ class JiraHandlerApp(admin.MConfigHandler):
         #else:
         #    self.callerArgs.data['save_results'][0] = '0'             
                 
-        self.writeConf('alert_manager', 'settings', self.callerArgs.data)                        
+        self.writeConf('jira', 'server', self.callerArgs.data)                        
                     
 # initialize the handler
-admin.init(AlertHandlerApp, admin.CONTEXT_APP_AND_USER)
+admin.init(ConfigApp, admin.CONTEXT_NONE)

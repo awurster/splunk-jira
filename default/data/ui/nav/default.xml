@@ -1,0 +1,9 @@
+<nav search_view="search" color="#205081">
+  <view name="jira_overview" default='true' />
+  <view name="issues" />   
+  <collection label="Settings">
+        <a href="/manager/jira/apps/local/jira/setup?action=edit">Global Settings</a>
+  </collection>
+  <collection label="Help" >
+  </collection>
+</nav>
